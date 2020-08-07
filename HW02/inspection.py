@@ -4,10 +4,15 @@
 # In[14]:
 
 
+import sys
 import numpy as np
 import csv 
 
-
+if __name__ == '__main__':
+    train_in = sys.argv[1]
+    train_out = sys.argv[2]
+    
+    
 def read_file(path): 
     data =[]
     with open(path) as tsvfile:
@@ -62,11 +67,14 @@ def calculateError(data, majority):
     error = error/len(data[1:])
     return error    
 
-small_data_train = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/small_train.tsv')
-small_data_test = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/small_test.tsv')
+def write_file(path):
+    text = open('./'+path, 'w')
+    text.write('gini_impurity: '+str(gini(train_data[1:]))+'\n'+'error: '+str(calculateError(train_data,majorityVote(train_data))))
+    text.close()
+    return text
 
-g = gini(small_data_train[1:])
-m = majorityVote(small_data_train)
-e = calculateError(small_data_train, m)
-print(g,m,e)
+train_data = read_file(train_in)
+
+write_file(train_out)
+
 

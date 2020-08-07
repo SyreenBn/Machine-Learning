@@ -1,12 +1,23 @@
 
 # coding: utf-8
 
-# In[4]:
+# In[8]:
 
 
+import sys
 import numpy as np
 import csv 
 
+if __name__ == '__main__':
+    train_in = sys.argv[1]
+    test_in = sys.argv[2]
+    max_depth = sys.argv[3]
+    
+    train_out = sys.argv[4]
+    test_out = sys.argv[5]
+    metrics = sys.argv[6]
+    
+    
 def read_file(path): 
     data =[]
     with open(path) as tsvfile:
@@ -14,9 +25,7 @@ def read_file(path):
         for row in reader:
             data.append(row)
     return data
-
-
-        
+    
 
 class Node:
     def __init__(self, data):
@@ -92,7 +101,7 @@ class Tree:
             else:
                 b +=1
         if a == b :
-            if self.label[0] > self.label:
+            if self.label[0] > self.label[1]:
                 node.majority_vote = self.label[0]
             else:
                 node.majority_vote = self.label[1]
@@ -117,7 +126,11 @@ class Tree:
             largest_gini = np.max(G_attr)
             list_argmax_ginis = [i for i, x in enumerate(G_attr) if x == largest_gini]
             if (largest_gini > 0):
-                best_attr_index = np.max(list_argmax_ginis)
+                max_lex = self.header[list_argmax_ginis[0]]
+                for i in range (1,len(list_argmax_ginis)):
+                    if max_lex < self.header[list_argmax_ginis[i]]:
+                        max_lex = self.header[list_argmax_ginis[i]]
+                best_attr_index = self.header.index(max_lex)
                 left_right = self.best_attr_split(node,best_attr_index)
                 node.left.split_index = best_attr_index
                 node.right.split_index = best_attr_index
@@ -142,8 +155,6 @@ class Tree:
         for i in data:
             collection.append(i[-1])
         unique = np.unique(collection)
-#         print (unique)
-#         print(node.left.data)
         if node.split_index >=0:
             header = self.header[node.split_index] + " = " + node.data[0][node.split_index] + " : "
         else :
@@ -154,7 +165,6 @@ class Tree:
         if node.left != None and node.right != None:
             ret += self.printedTree(node.left, level+1)
             ret += self.printedTree(node.right, level+1)
-#         out = print(ret)
         return ret
         
     
@@ -216,83 +226,25 @@ class Tree:
         else:
             self.test_predict = predict[:]
     
-class_ex = [['Y','A','B'],[1,0,0],[1,0,0],[1,0,1],[1,0,1],[1,1,1],[1,1,1],[1,1,1],[1,1,1]]
-small_data_train = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/small_train.tsv')
-small_data_test = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/small_test.tsv')
-
-education_data_train = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/education_train.tsv')
-education_data_test = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/education_test.tsv')
-
-# for i in range (3,4):
-#     print (education_data_train[i])
-#     print()
-
-education_tree_train = Tree(education_data_train,education_data_test ,3)
-education_tree_train.printTree()
-# print (education_tree_train.train_error)
-# print (education_tree_train.test_error)
-# print (education_tree_train.splitIndx)
-
-# for j in education_tree_train.leaves_nodes:
-# #     print (j.data[0]) 
-# #     print(j.majority_vote)
-#     print(j.list_split_index)
-# print(education_tree_train.printedTree(education_tree_train.root, 0))
-# education_tree_test = Tree(education_data_test[1:],2)
-# for i in education_data_train:
-#     print (i)
-
-# print(len(education_tree_train.root.data))
-# print()
-# print(len(education_tree_train.root.left.data))
-# print()
-# print(len(education_tree_train.root.right.data))
-# print()
-# print(len(education_tree_train.root.left.left.data))
-# print()
-# print(len(education_tree_train.root.left.right.data))
-# print()
-# print(len(education_tree_train.root.right.left.data))
-# print()
-# print(len(education_tree_train.root.right.right.data))
 
 
-politicians_train = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/politicians_train.tsv')
-politicians_test = read_file('C:/Users/bnabi/Desktop/Master/Spring 2020/Machine Learning/HW02/handout/politicians_test.tsv')
+def write_file(path, predictions, mets=False):
+    text = open('./'+path, 'w')
+    if mets == True:
+        text.write('error(train): '+str(predictions[0])+'\n'+'error(test): '+str(predictions[1]))
+    else:
+        text.write("\n".join(predictions))
+    
+    text.close()
+    return text
 
-small_data_train_tree = Tree(small_data_train, small_data_test, 3)
-print(small_data_train_tree.gini(small_data_train_tree.root.data))
-# print(small_data_train_tree.train_predict)
-# print(small_data_train_tree.train_error)
-# print(small_data_train_tree.test_error)
-# print(small_data_train_tree.printedTree(small_data_train_tree.root, 0))
+train_data = read_file(train_in)
+test_data = read_file(test_in)
+depth = int(max_depth)
+t = Tree(train_data,test_data,depth)
 
-# small_data_train_tree.evaluate('tr')
-# small_data_test_tree = Tree(small_data_test[1:],3)
-# for i in small_data_train_tree.leaves_nodes:
-#     print (i.data)
-# print(small_data_train_tree.test_predict)
-# t = Tree(class_ex[1:],2)
-# print(small_data_train_tree.root.data)
-# print()
-# print(small_data_train_tree.root.left.data)
-# print()
-# print(small_data_train_tree.root.right.data)
-# print()
-# print(small_data_train_tree.root.left.left.data)
-# print()
-# print(small_data_train_tree.root.left.right.data)
-# print()
-# print(small_data_train_tree.root.right.left.data)
-# print()
-# print(small_data_train_tree.root.right.right.data)
+write_file(train_out, t.train_predict, mets = False)
+write_file(test_out, t.test_predict, mets = False)
+write_file(metrics, [t.train_error, t.test_error], mets = True)
 
-
-
-
-# t.cal_attr_gini(t.root)
-# print(train.root.data)
-# print(train.root.right.data)
-# print(train.root.left.data)
-# print(small_data_train_)
 
